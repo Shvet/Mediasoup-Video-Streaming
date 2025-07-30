@@ -1,0 +1,46 @@
+{
+  "name": "mediasoup-livestream-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MediaSoup WebRTC Live Streaming Server",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node src/server.js",
+    "watch": "nodemon --watch src src/server.js",
+    "docker:build": "docker-compose build",
+    "docker:build:no-cache": "docker-compose build --no-cache",
+    "docker:start": "docker-compose up -d",
+    "docker:start:interactive": "docker-compose up",
+    "docker:stop": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "docker:setup:win": "powershell -File ./docker-setup.ps1",
+    "docker:setup:unix": "bash ./docker-setup.sh",
+    "docker:setup": "npm run docker:setup:win",
+    "docker:debug": "docker-compose run --rm mediasoup-server sh",
+    "docker:verify": "bash ./docker-verify.sh",
+    "docker:health": "bash ./docker-healthcheck.sh",
+    "docker:prod:build": "docker-compose -f docker-compose.prod.yml build",
+    "docker:prod:build:no-cache": "docker-compose -f docker-compose.prod.yml build --no-cache",
+    "docker:prod:start": "docker-compose -f docker-compose.prod.yml up -d",
+    "docker:prod:start:interactive": "docker-compose -f docker-compose.prod.yml up",
+    "docker:prod:stop": "docker-compose -f docker-compose.prod.yml down",
+    "docker:prod:logs": "docker-compose -f docker-compose.prod.yml logs -f",
+    "docker:prod:setup:win": "powershell -File ./setup-nginx-ssl.ps1 && docker-compose -f docker-compose.prod.yml up -d",
+    "docker:prod:setup:unix": "bash ./setup-nginx-ssl.sh && docker-compose -f docker-compose.prod.yml up -d",
+    "docker:prod:setup": "npm run docker:prod:setup:win",
+    "docker:prod:debug": "docker-compose -f docker-compose.prod.yml run --rm mediasoup-server sh",
+    "docker:prod:verify": "bash ./docker-verify.sh",
+    "docker:prod:health": "bash ./docker-healthcheck.sh"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mediasoup": "^3.15.3",
+    "socket.io": "^4.7.2",
+    "uuid": "^9.0.1",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

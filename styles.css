@@ -1,0 +1,29 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+
+h1 {
+    color: #333;
+}
+
+#roomList {
+    list-style-type: none;
+    padding: 0;
+}
+
+#roomList li {
+    margin: 10px 0;
+    padding: 10px;
+    background-color: #f4f4f4;
+    border: 1px solid #ddd;
+    cursor: pointer;
+}
+
+#roomList li:hover {
+    background-color: #e2e2e2;
+}
+
+#liveStream {
+    margin-top: 20px;
+}

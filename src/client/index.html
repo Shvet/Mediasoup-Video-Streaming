@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <title>WebRTC Client</title>
+        <style>
+            #videoContainer {
+                width: 640px;
+                height: 480px;
+                border: 1px solid black;
+                position: relative;
+            }
+
+            #remoteVideo {
+                width: 100%;
+                height: 100%;
+            }
+
+            #placeholder {
+                width: 100%;
+                height: 100%;
+                background-color: lightgray;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                position: absolute;
+                top: 0;
+                left: 0;
+            }
+        </style>
+    </head>
+
+    <body>
+        <h1>WebRTC Client</h1>
+
+        <div id="videoContainer">
+            <video id="remoteVideo" autoplay playsinline></video>
+            <div id="placeholder">No Stream</div>
+        </div>
+
+        <button id="connectButton">Connect</button>
+        <button id="disconnectButton">Disconnect</button>
+        <button id="toggleButton">Toggle Stream</button>
+
+        <script>
+            const videoContainer = document.getElementById('videoContainer');
+            const remoteVideo = document.getElementById('remoteVideo');
+            const placeholder = document.getElementById('placeholder');
+            const connectButton = document.getElementById('connectButton');
+            const disconnectButton = document.getElementById('disconnectButton');
+            const toggleButton = document.getElementById('toggleButton');
+
+            let peerConnection;
+            let socket;
+            let isStreamVisible = false;
+
+            const servers = {
+                iceServers: [
+                    {
+                        urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'],
+                    },
+                ],
+            };
+
+            connectButton.addEventListener('click', () => {
+                socket = new WebSocket('wss://192.168.29.93:8443');
+
+                socket.addEventListener('open', () => {
+                    console.log('Connected to the server');
+                    startWebRTC();
+                });
+
+                socket.addEventListener('message', async (event) => {
+                    const data = JSON.parse(event.data);
+                    if (data.type === 'offer') {
+                        await handleOffer(data);
+                    } else if (data.type === 'answer') {
+                        await handleAnswer(data);
+                    } else if (data.type === 'candidate') {
+                        await handleCandidate(data);
+                    }
+                });
+
+                socket.addEventListener('error', (error) => {
+                    console.error('WebSocket Error:', error);
+                });
+
+                socket.addEventListener('close', () => {
+                    console.log('Disconnected from the server');
+                    if (peerConnection) {
+                        peerConnection.close();
+                        peerConnection = null;
+                    }
+                });
+
+
+            });
+
+            disconnectButton.addEventListener('click', () => {
+                if (socket && socket.readyState === WebSocket.OPEN) {
+                    socket.close();
+                }
+            });
+
+            toggleButton.addEventListener('click', () => {
+                isStreamVisible = !isStreamVisible;
+                if (isStreamVisible) {
+                    remoteVideo.style.display = 'block';
+                    placeholder.style.display = 'none';
+                } else {
+                    remoteVideo.style.display = 'none';
+                    placeholder.style.display = 'flex';
+                }
+            });
+
+            async function startWebRTC() {
+                peerConnection = new RTCPeerConnection(servers);
+
+                peerConnection.addEventListener('icecandidate', (event) => {
+                    if (event.candidate) {
+                        socket.send(JSON.stringify({ type: 'candidate', candidate: event.candidate }));
+                    }
+                });
+
+                peerConnection.addEventListener('track', (event) => {
+                    remoteVideo.srcObject = event.streams[0];
+                    isStreamVisible = true;
+                    remoteVideo.style.display = 'block';
+                    placeholder.style.display = 'none';
+                });
+
+                peerConnection.addEventListener('connectionstatechange', () => {
+                    console.log('connection state:', peerConnection.connectionState)
+                });
+                peerConnection.addEventListener('iceconnectionstatechange', () => {
+                    console.log('ice connection state:', peerConnection.iceConnectionState)
+                });
+                peerConnection.addEventListener('signalingstatechange', () => {
+                    console.log('signaling state:', peerConnection.signalingState)
+                });
+
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+                socket.send(JSON.stringify({ type: 'offer', offer: offer }));
+            }
+
+            async function handleOffer(data) {
+                if (!peerConnection) {
+                    peerConnection = new RTCPeerConnection(servers);
+                    peerConnection.addEventListener('icecandidate', (event) => {
+                        if (event.candidate) {
+                            socket.send(JSON.stringify({ type: 'candidate', candidate: event.candidate }));
+                        }
+                    });
+
+                    peerConnection.addEventListener('track', (event) => {
+                        remoteVideo.srcObject = event.streams[0];
+                        isStreamVisible = true;
+                        remoteVideo.style.display = 'block';
+                        placeholder.style.display = 'none';
+                    });
+                    peerConnection.addEventListener('connectionstatechange', () => {
+                        console.log('connection state:', peerConnection.connectionState)
+                    });
+                    peerConnection.addEventListener('iceconnectionstatechange', () => {
+                        console.log('ice connection state:', peerConnection.iceConnectionState)
+                    });
+                    peerConnection.addEventListener('signalingstatechange', () => {
+                        console.log('signaling state:', peerConnection.signalingState)
+                    });
+                }
+                await peerConnection.setRemoteDescription(data.offer);
+                const answer = await peerConnection.createAnswer();
+                await peerConnection.setLocalDescription(answer);
+                socket.send(JSON.stringify({ type: 'answer', answer: answer }));
+            }
+
+            async function handleAnswer(data) {
+                await peerConnection.setRemoteDescription(data.answer);
+            }
+
+            async function handleCandidate(data) {
+                try {
+                    await peerConnection.addIceCandidate(data.candidate);
+                } catch (e) {
+                    console.error('Error adding ice candidate:', e);
+                }
+            }
+        </script>
+    </body>
+
+</html>

@@ -1,0 +1,44 @@
+# Build stage
+FROM node:18-alpine AS build
+
+WORKDIR /app
+
+# Install dependencies for mediasoup build
+RUN apk add --no-cache python3 py3-pip make g++ linux-headers
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production
+
+# Production stage
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install runtime dependencies for mediasoup
+RUN apk add --no-cache python3 py3-pip
+
+# Copy built node modules and other files from build stage
+COPY --from=build /app/node_modules ./node_modules
+
+# Copy server-side code only
+COPY src/ ./src/
+COPY cert.pem key.pem .env* ./
+
+# Create a non-root user and switch to it
+RUN addgroup -g 1000 appuser && \
+    adduser -u 1000 -G appuser -s /bin/sh -D appuser && \
+    chown -R appuser:appuser /app
+
+USER appuser
+
+# Expose ports
+EXPOSE 8080 8443 10000-10100/udp
+
+# Set environment variables
+ENV NODE_ENV=production
+
+# Start the application
+CMD ["node", "src/server.js"]

@@ -1,0 +1,49 @@
+# Node.js
+node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Version control
+.git
+.gitignore
+
+# Environment files (except .env.example)
+.env.local
+.env.development
+.env.test
+
+# Flutter/client-side code
+lib/
+android/
+ios/
+web/
+linux/
+macos/
+windows/
+build/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+pubspec.yaml
+pubspec.lock
+
+# Documentation
+README.md
+SSL_SETUP.md
+
+# Development files
+.vscode
+.idea
+
+# Temporary files
+tmp
+temp
+
+# Logs
+logs
+*.log
+
+# Other
+.DS_Store
+Thumbs.db
