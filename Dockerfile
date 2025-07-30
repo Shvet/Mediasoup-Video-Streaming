@@ -2,19 +2,19 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Install dependencies for mediasoup
+# Install build dependencies for mediasoup
 RUN apk add --no-cache python3 py3-pip make g++ linux-headers
 
 # Copy package files and install dependencies
 COPY package*.json ./
 RUN npm ci --only=production
 
-# Copy server-side code only
+# Copy server-side code
 COPY src/ ./src/
-COPY cert.pem key.pem .env* ./
+COPY .env* ./
 
-# Expose ports
-EXPOSE 8080 8443 10000-10100/udp
+# Expose only the HTTP port
+EXPOSE 8080
 
-# Start the application
+# Start the app
 CMD ["node", "src/server.js"]

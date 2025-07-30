@@ -63,7 +63,7 @@
             };
 
             connectButton.addEventListener('click', () => {
-                socket = new WebSocket('wss://192.168.29.93:8443');
+                socket = new WebSocket('https://mediasoup-video-streaming.onrender.com');
 
                 socket.addEventListener('open', () => {
                     console.log('Connected to the server');

@@ -35,10 +35,10 @@ app.use((req, res, next) => {
 
 // Create both HTTP and HTTPS servers
 const httpServer = http.createServer(app);
-const httpsServer = https.createServer(sslOptions, app);
+// const httpsServer = https.createServer(sslOptions, app);
 
 // Socket.io can attach to the HTTPS server
-const io = new Server(httpsServer, {
+const io = new Server(httpServer, {
   cors: {
     origin: "*",
     methods: ["GET", "POST"]
@@ -55,7 +55,7 @@ async function startServer() {
     });
 
     const httpPort = process.env.HTTP_PORT || 8080;
-    const httpsPort = process.env.HTTPS_PORT || 8443;
+    // const httpsPort = process.env.HTTPS_PORT || 8443;
     
     // Start HTTP server
     httpServer.listen(httpPort, '0.0.0.0', () => {
@@ -63,9 +63,9 @@ async function startServer() {
     });
     
     // Start HTTPS server
-    httpsServer.listen(httpsPort, '0.0.0.0', () => {
-      console.log(`HTTPS Server is running on port ${httpsPort}`);
-    });
+    // httpsServer.listen(httpsPort, '0.0.0.0', () => {
+    //   console.log(`HTTPS Server is running on port ${httpsPort}`);
+    // });
   } catch (error) {
     console.error('Failed to start server:', error);
     process.exit(1);
