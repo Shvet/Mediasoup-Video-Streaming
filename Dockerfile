@@ -7,7 +7,7 @@ RUN apk add --no-cache python3 py3-pip make g++ linux-headers
 
 # Copy package files and install dependencies
 COPY package*.json ./
-RUN npm ci --only=prod
+RUN npm ci --only=production
 
 # Copy server-side code only
 COPY src/ ./src/
