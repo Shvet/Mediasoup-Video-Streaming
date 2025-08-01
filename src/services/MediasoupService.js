@@ -118,11 +118,11 @@ class MediasoupService {
       throw new Error(`Transport with id ${transportId} not found`);
     }
 
-    const transport = this.transports.get(transportId);
-    await transport.connect({ dtlsParameters });
+    const transportData = this.transports.get(transportId);
+    await transportData.transport.connect({ dtlsParameters });
     console.log(' Transport connected:', {
       transportId: transportId,
-      workerId: transport.workerId,
+      workerId: transportData.workerId,
     });
     return true;
   }
@@ -216,38 +216,38 @@ class MediasoupService {
       });
 
       // Monitor media stream statistics
-      // const streamMonitor = setInterval(async () => {
-      //   try {
-      //     if (producer.closed) {
-      //       clearInterval(streamMonitor);
-      //       return;
-      //     }
+      const streamMonitor = setInterval(async () => {
+        try {
+          if (producer.closed) {
+            clearInterval(streamMonitor);
+            return;
+          }
 
-      //     const stats = await producer.getStats();
-      //     console.log('📈 Media Stream Stats:', {
-      //       producerId: producer.id,
-      //       kind: kind,
-      //       timestamp: new Date().toISOString(),
-      //       stats: stats.map(stat => ({
-      //         type: stat.type,
-      //         ssrc: stat.ssrc,
-      //         packetsReceived: stat.packetCount,
-      //         bytesReceived: stat.byteCount,
-      //         bitrate: stat.bitrate,
-      //         jitter: stat.jitter,
-      //         fractionLost: stat.fractionLost,
-      //         roundTripTime: stat.roundTripTime
-      //       }))
-      //     });
-      //   } catch (error) {
-      //     console.error('❌ Error getting producer stats:', error);
-      //     clearInterval(streamMonitor);
-      //   }
-      // }, 3000); // Every 3 seconds
+          const stats = await producer.getStats();
+          console.log('📈 Media Stream Stats:', {
+            producerId: producer.id,
+            kind: kind,
+            timestamp: new Date().toISOString(),
+            stats: stats.map(stat => ({
+              type: stat.type,
+              ssrc: stat.ssrc,
+              packetsReceived: stat.packetCount,
+              bytesReceived: stat.byteCount,
+              bitrate: stat.bitrate,
+              jitter: stat.jitter,
+              fractionLost: stat.fractionLost,
+              roundTripTime: stat.roundTripTime
+            }))
+          });
+        } catch (error) {
+          console.error('❌ Error getting producer stats:', error);
+          clearInterval(streamMonitor);
+        }
+      }, 3000); // Every 3 seconds
 
       // Clean up monitor when producer closes
       producer.on('close', () => {
-        // clearInterval(streamMonitor);
+        clearInterval(streamMonitor);
         console.log('🔴 Producer closed, stopping stream monitor:', {
           producerId: producer.id,
           kind: kind
@@ -320,17 +320,17 @@ class MediasoupService {
 
   async closeTransport(transportId) {
     try {
-      const transport = this.transports.get(transportId);
-      if (transport) {
+      const transportData = this.transports.get(transportId);
+      if (transportData) {
         console.log(' Closing transport:', {
           transportId: transportId,
-          workerId: transport.workerId
+          workerId: transportData.workerId
         });
-        await transport.close();
+        await transportData.transport.close();
         this.transports.delete(transportId);
         console.log(' Transport closed successfully:', {
           transportId: transportId,
-          workerId: transport.workerId,
+          workerId: transportData.workerId,
         });
       }
     } catch (error) {
@@ -345,11 +345,11 @@ class MediasoupService {
   }
 
   getTransportStats(transportId) {
-    const transport = this.transports.get(transportId);
-    if (!transport) {
+    const transportData = this.transports.get(transportId);
+    if (!transportData) {
       throw new Error(`Transport not found: ${transportId}`);
     }
-    return transport.getStats();
+    return transportData.transport.getStats();
   }
 }
 // Create and initialize single instance
