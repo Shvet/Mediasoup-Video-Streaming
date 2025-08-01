@@ -13,10 +13,10 @@ const testWatch = require('./test-watch');
 console.log('Server started with test-watch module:', testWatch.testFunction());
 
 // SSL Certificate options
-const sslOptions = {
-  key: fs.readFileSync(path.join(__dirname, '../key.pem')),
-  cert: fs.readFileSync(path.join(__dirname, '../cert.pem'))
-};
+// const sslOptions = {
+//   key: fs.readFileSync(path.join(__dirname, '../key.pem')),
+//   cert: fs.readFileSync(path.join(__dirname, '../cert.pem'))
+// };
 
 const app = express();
 
@@ -48,7 +48,7 @@ const io = new Server(httpServer, {
 async function startServer() {
   try {
     await mediasoupService.initialize();
-    
+
     io.on('connection', (socket) => {
       console.log('a user connected');
       handleConnection(socket, io);
@@ -56,12 +56,12 @@ async function startServer() {
 
     const httpPort = process.env.HTTP_PORT || 8080;
     // const httpsPort = process.env.HTTPS_PORT || 8443;
-    
+
     // Start HTTP server
     httpServer.listen(httpPort, '0.0.0.0', () => {
       console.log(`HTTP Server is running on port ${httpPort}`);
     });
-    
+
     // Start HTTPS server
     // httpsServer.listen(httpsPort, '0.0.0.0', () => {
     //   console.log(`HTTPS Server is running on port ${httpsPort}`);
